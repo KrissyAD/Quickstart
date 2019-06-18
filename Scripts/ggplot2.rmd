@@ -1,0 +1,8 @@
+
+# Learning ggplot2
+We're learning ggplot2. It's going to be amazing
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+```
+
