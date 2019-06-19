@@ -21,7 +21,7 @@ buoy_url <- 'http://www.ndbc.noaa.gov/view_text_file.php?filename=mokh1h2010.txt
 ```
 
 # Read in data
-```{r benthic raw}
+```{r}
 benthic_raw <- read_csv(benthic_url)
 head(benthic_raw) # Ugly datasets. Lots of spaces/NAs
 ```
@@ -44,7 +44,80 @@ benthic
 
 Note that if combining datafiles, then dates are usually in both, and may have conflicts in format. They are usually characters, so stringr is a good option to use
 
+# Explore
+```{r}
+summary(benthic)
+skimr::skim(benthic) # skim() from skimr gives a different summary type
+# Useful for looking for missing values etc
+unique(benthic$date) # Show the unique dates
+unique(benthic$id_name) # Show unique ID names (species)
+```
 
+# Plot
+```{r}
+ggplot(benthic, aes(date, fill = id_name)) +
+  geom_bar()
+
+```
+
+# Read in 2nd dataset (note this is a text file not a csv so use read_table2 but before there are still some errors (e.g. two headers))
+```{r benthic raw}
+buoy_raw <- read_table2(buoy_url)
+head(buoy_raw) 
+buoy <- buoy_raw # Assign a new one to keep the raw file
+```
+
+# Buoy wrangle
+```{r}
+# 1st step. Make column header a combo of row 1 and 2
+# Overwrite column names.
+# Note the use of ` NOT ' below
+names(buoy) <- str_c(
+  names(buoy),
+  buoy %>% filter(`#YY` == "#yr"),  # Filters for where YY = #YY
+  sep = "_" # Then separate them with an underscore
+)
+names(buoy)
+
+# 2nd step. Clean up the slashes and hashes
+names(buoy) <-str_replace_all(names(buoy),"#","")
+names(buoy) <-str_replace_all(names(buoy),"/","")
+names(buoy)
+
+head(buoy)
+
+# Now we can delete the redundant row as the info is combined
+buoy <- buoy %>% 
+  filter(`YY_yr` != "#yr")
+
+```
+
+# Explore the data
+```{r}
+ggplot(buoy, aes(WTMP_degC))+
+  geom_bar()
+```
+
+# Joining datasets
+```{r}
+head(benthic)
+head(buoy)
+# The date formats are totally different at this stage
+
+# Unite buoy dates using tidyr package
+buoy <- buoy %>% 
+  unite(date, c(YY_yr, MM_mo, DD_dy), sep = "-") # Order and separator should match the format of dates in the second file
+
+# Going to Left-join benthic by date
+bb_join <- benthic %>% 
+  left_join(buoy, by = "date") # Check size compared to what might be expected
+
+bb_join %>% 
+  select(id_name, x, y, date, hh_hr, mm_mn, WTMP_degC) %>% 
+  head()
+# The problem is the timeframe for each row differs. One is daily. The other is # every 6 mins or so. So there are lots of repeated rows. 
+# The action to take depends on the research question you are going to ask
+```
 
 
 
