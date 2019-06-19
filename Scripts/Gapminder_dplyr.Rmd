@@ -30,16 +30,113 @@ gapminder$country
 
 # Working with dplyr (section 6.4 in the workbook)
 
-## Filter function
+## Filter() function. This operates on rows
 ```{r}
 filter(gapminder, lifeExp < 40) # Filter by age
 filter(gapminder, country == "Mexico") # Filter by country
 filter(gapminder, country == "Mexico", year == 2002) # Filter by country and year
-brazil_life_exp <- filter(gapminder, country == "Brazil", year > 1986, year < 2008)
+brazil_life_exp <- filter(gapminder, country == "Brazil", year > 1986 & year < 2008)
 mean(brazil_life_exp$lifeExp)
 ```
 
+## Select() function. This operates on columns
+```{r}
+select(gapminder, year, country, lifeExp) # Note it produces the order that you ask for. The first item must be the dataset though.
+select(gapminder, -continent, -gdpPercap) # The first again is the df. The others are ones that you don't want
+```
 
+## Using filter() and select() together (Note shortcut fo arrow is Option minus)
+```{r}
+# Create a cambodia specific df without continent and lifeExp
+gap_cambodia <- filter(gapminder, country == "Cambodia") #df1
+gap_cambodia2 <- select(gap_cambodia, -continent, -lifeExp) #df2
+```
+
+## Using pipe operator
+Note - command shift m gives the pipe ('and then') on a mac %>% 
+note - using pipe is a nice way to avoid nested functions
+
+```{r}
+gapminder %>% head()
+```
+The pipe takes whatever it to its left and feeding it to whatever is on the right
+So the above takes gapminder and feeds it to the head function
+
+```{r}
+gap_cambodia <- filter(gapminder, country == "Cambodia") %>% #and then
+  select(-continent, -lifeExp)
+```
+
+Another option
+```{r}
+gap_cambodia <- gapminder %>% #and then
+  filter(country == "Cambodia") %>% #and then
+  select(-continent, -lifeExp)
+```
+
+
+## Using mutate()
+```{r}
+gapminder %>%  
+  mutate(gdp = pop * gdpPercap) 
+# You don't need to press enter after the pipe but it is a convention to make it more readable
+#gdp is a new column. Note no == as it isn't a question but a command
+ 
+```
+
+Calculate the population in thousands for all Asian countries in the year 2007
+```{r}
+gapminder %>% 
+  filter(continent == "Asia",year == 2007) %>% 
+  mutate(popthousands = pop/1000)
+```
+
+## Using group_by()
+```{r}
+gapminder %>% 
+  filter(year == 2002) %>% 
+  group_by(continent) %>% 
+  mutate(cont_pop = sum(pop)) # This is not great. See next option as better option
+```
+
+Add in summarize()
+```{r}
+gapminder %>% 
+  filter(year == 2002) %>% 
+  group_by(continent) %>% 
+  summarize(cont_pop = sum(pop))
+```
+
+```{r}
+gapminder %>% 
+  group_by(continent, year) %>% 
+  summarize(cont_pop = sum(pop))
+```
+
+Use ungroup (to undo the grouping as once the grouping is applied it will apply the whole way)
+```{r}
+df1 <- gapminder %>% 
+  group_by(continent, year) %>% 
+  mutate(cont_pop = sum(pop)) %>%
+  ungroup() # Just good practice to ungroup just in case it stays grouped & causes problems
+```
+
+## Using arrange().
+```{r}
+gapminder %>% 
+  group_by(continent, year) %>% 
+  summarise(cont_pop = sum(pop)) %>% 
+  arrange(-year) # Arrange by year in descending order
+```
+
+```{r}
+gapminder %>% 
+  mutate(gdp = pop * gdpPercap) %>% 
+  group_by(continent) %>% 
+  mutate(maxGDP = max(gdp)) %>% 
+  filter(gdp == maxGDP)
+  ungroup()
+```
 
 
 
