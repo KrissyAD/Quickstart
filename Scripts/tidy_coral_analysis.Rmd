@@ -1,0 +1,50 @@
+# Tidy Coral analysis
+
+
+```{r setup, warning=FALSE, message=FALSE}
+# Attach libraries
+library(tidyverse) # If needed: install.packages("tidyverse")
+library(janitor) # If needed: install.packages("janitor")
+library(skimr) # If needed: install.packages("skimr")
+library(stringr) # If needed: install.packages("stringr")
+# Note Cmd Arrow hops you to end of line. Option Arrow hops to next space. 
+# Add Shift to either of these to also get highlighting
+
+# data filepaths
+## benthic data
+benthic_url <- 'https://www.nodc.noaa.gov/archive/arc0054/0104255/1.1/data/0-data/cd08/100308OaAla03m.CSV'
+
+## buoy data
+buoy_url <- 'http://www.ndbc.noaa.gov/view_text_file.php?filename=mokh1h2010.txt.gz&dir=data/historical/stdmet/'
+
+# Note these just load as urls, not dfs
+```
+
+# Read in data
+```{r benthic raw}
+benthic_raw <- read_csv(benthic_url)
+head(benthic_raw) # Ugly datasets. Lots of spaces/NAs
+```
+
+# Wrangle
+```{r}
+benthic <- benthic_raw %>% 
+  janitor::clean_names() # This forces the function clean_names specifically from janitor. This line is so the column names are clean (e.g. spaces removed, lowercase etc)
+benthic
+names(benthic_raw)
+names(benthic)
+
+# Select the columns needed (note this overwrites the current benthic df)
+benthic <- benthic %>% 
+  select(id_name, point, x,y,id_date) %>% 
+  mutate(date = stringr::str_remove_all(id_date, "#")) # Remove # from id_date
+
+benthic
+```
+
+Note that if combining datafiles, then dates are usually in both, and may have conflicts in format. They are usually characters, so stringr is a good option to use
+
+
+
+
+
