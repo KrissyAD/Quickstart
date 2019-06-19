@@ -1,0 +1,46 @@
+---
+title: "Gapminder-dplyr"
+output: html_document
+---
+
+# Loading required libraries
+```{r load packages}
+library(tidyverse)
+```
+
+# Load data
+```{r load data}
+gapminder <- read.csv("https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder.csv")
+```
+
+# Look at the data
+```{r look at data}
+head(gapminder)
+tail(gapminder)
+str(gapminder)
+names(gapminder)
+ncol(gapminder)
+```
+
+# Look at individual variables within the df
+```{r}
+gapminder$lifeExp
+gapminder$country
+```
+
+# Working with dplyr (section 6.4 in the workbook)
+
+## Filter function
+```{r}
+filter(gapminder, lifeExp < 40) # Filter by age
+filter(gapminder, country == "Mexico") # Filter by country
+filter(gapminder, country == "Mexico", year == 2002) # Filter by country and year
+brazil_life_exp <- filter(gapminder, country == "Brazil", year > 1986, year < 2008)
+mean(brazil_life_exp$lifeExp)
+```
+
+
+
+
+
+
