@@ -2,7 +2,144 @@
 # Learning ggplot2
 We're learning ggplot2. It's going to be amazing
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo=TRUE)
+Load tidyverse
+```{r tidyverse}
+library(tidyverse)
+```
+
+Note that the "R data" title in the R chunk runs R but the data part is actually a sub-heading. If you then click on the learning ggplot2 at the bottom on this window you can see all of the headings and the chunk titles
+
+Get the data from github and get a summary
+
+```{r data}
+ohid_data <- read.csv("https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/OHI_global_data.csv")
+summary(ohid_data)
+describe(ohid_data)
+dim(ohid_data)
+```
+
+We start with ggplot. Note data need to be in a dataframe
+The first ggplot section outlines which variables to plot
+The geom section says which type of plot is needed
+geom_point is a scatter plot
+geom_jitter is a scatter plot with jittering
+geom_bar is a barplot
+geom_histogram is a histogram
+
+```{r}
+ggplot(data = ohid_data, aes(x = HDI)) + 
+  geom_histogram()
+```
+Multiple datasets can be overlaid onto each other
+Get second dataset
+
+Note the ggplot is the global assignment - it will be used unless a later geom assigns a different object
+
+Note that aes means aesthetics
+```{r multiple geoms}
+OHI_summary <- read.csv("https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/OHI_scores_georegion_summary.csv")
+
+ggplot(data = OHI_summary, aes(x = georegions, y = OHI_score_average)) +
+  geom_bar(stat = "identity") +
+  geom_jitter(data = ohid_data, aes(x = georegion_one, y = OHI_score))
+```
+
+These two actually produce the same graph
+```{r Different ways to specify the ggplot}
+ggplot(data = ohid_data, aes(y=OHI_score, x = HDI, color=georegion_one)) +
+  geom_point()
+  
+ggplot(data = ohid_data) +
+  geom_point(aes(y = OHI_score, x = HDI, color=georegion_one)) 
+```
+
+# Aes notes
+color
+fill
+label
+linetype
+shape
+alpha
+size
+
+# Adding a third variable with aes
+This plot makes the dots bigger or smaller in line with coastal population size
+```{r}
+ggplot(data = ohid_data, aes(x = OHI_score, y = HDI, size = coastal_pop)) +
+  geom_point()
+```
+
+This plot makes the dots coloured in line with coastal population size (a continuous variable)
+```{r}
+ggplot(data = ohid_data, aes(x = OHI_score, y = HDI, color = coastal_pop)) +
+  geom_point()
+```
+
+This plot makes the dots coloured in line with a discrete variable
+```{r}
+ggplot(data = ohid_data, aes(x = OHI_score, y = HDI, color = georegion_one)) +
+  geom_point()
+```
+
+This plot changes dot shape in line with a discrete variable
+```{r}
+ggplot(data = ohid_data, aes(x = OHI_score, y = HDI, shape = georegion_one)) +
+  geom_point()
+```
+
+# Themes
+Themes provide default plotting settings
+```{r}
+ggplot(data = ohid_data, aes(x = OHI_score, y = HDI, shape = georegion_one)) +
+  geom_point() +
+  theme_bw()
+```
+
+```{r}
+source('https://raw.githubusercontent.com/OHI-Science/ohiprep/master/src/R/scatterTheme.txt')       
+
+ggplot(data = ohid_data, aes(x = OHI_score, y = HDI)) + 
+  geom_point() + 
+  scatterTheme
+```
+
+Change labels
+```{r}
+ggplot(data = ohid_data, aes(y = OHI_score, x = HDI, color = georegion_one)) +
+  geom_point() +
+  labs(y = "OHI score, 2017",
+       x = "Human Development Index",
+       title = "Human development is good for oceans",
+       color = "Georegions")
+```
+
+To use RColourBrewer
+```{r}
+library(RColorBrewer)
+display.brewer.all()
+
+my_palatte <- brewer.pal(n = 9, "YlOrRd")
+my_palatte
+```
+Look at "Hint 3" in the manual for some colour hints depending on whether the variable is continuous or discrete
+
+```{r}
+ggplot(data = ohid_data, aes(y = OHI_trend, x = OHI_score, color = HDI)) +
+  geom_point(size = 3) +
+  scale_color_gradientn(colors = my_palatte)
+```
+
+Can specify the colours in a gradient if variable is continuous
+```{r}
+ggplot(data = ohid_data, aes(y = OHI_trend, x = OHI_score, color = HDI)) +
+  geom_point(size = 3) +
+  scale_color_gradientn(colors = c("blue","red"))
+```
+
+If variable is discrete
+```{r}
+ggplot(data = ohid_data, aes(y = HDI, x = OHI_score, color = georegion_one)) +
+  geom_point(size = 3) +
+  scale_color_manual(values = my_palatte)
 ```
 
